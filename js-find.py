@@ -11,6 +11,7 @@ import os
 from colorama import Fore, Style, init
 import socks
 import socket
+from urllib.parse import urlparse
 
 
 def download_file(url, output_dir):
@@ -119,7 +120,7 @@ def main():
 
     # Print banner with codename and version
     codename = "JS Finding"
-    version = "v1.001"
+    version = "v1.0"
     banner = pyfiglet.Figlet(font="slant").renderText(codename)
     banner += f"{version.center(len(codename))}\n"
     print(Fore.GREEN + banner + Style.RESET_ALL)
@@ -173,7 +174,7 @@ def main():
         input_lines = sys.stdin.readlines()
         for line in input_lines:
             line = line.strip()
-            extracted = extract_js(line, args.debug, args.download, args.output_dir, args.create_lists, proxies)
+            extracted = extract_js(line, args.debug, args.download, args.output_dir, args.create_lists)
             results += extracted
             results.append("")  # Add an empty line for readability
             print("\n".join(extracted))
@@ -181,7 +182,7 @@ def main():
 
     # Process URL or list of domains if provided
     if args.url:
-        extracted = extract_js(args.url, args.debug, args.download, args.output_dir, args.create_lists, proxies)
+        extracted = extract_js(args.url, args.debug, args.download, args.output_dir, args.create_lists)
         results += extracted
         results.append("")  # Add an empty line for readability
         print("\n".join(extracted))
@@ -191,7 +192,7 @@ def main():
         with open(args.list, 'r') as f:
             domains = f.read().splitlines()
         for domain in domains:
-            extracted = extract_js(domain, args.debug, args.download, args.output_dir, args.create_lists, proxies)
+            extracted = extract_js(domain, args.debug, args.download, args.output_dir, args.create_lists)
             results += extracted
             results.append("")  # Add an empty line for readability
             print("\n".join(extracted))
