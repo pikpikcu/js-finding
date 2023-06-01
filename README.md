@@ -21,7 +21,7 @@ pip install -r requirements.txt
 ```
 ## Usage
 
-![JS Finding Usage](images/usage.png)
+![JS Finding Usage](https://raw.githubusercontent.com/pikpikcu/js-finding/main/image/default.png)
 
 JS Finding can be used to extract JavaScript (JS) files from either a single domain URL or a list of domains. The tool supports various extraction methods and provides additional options for file download and wordlists creation.
 
@@ -60,7 +60,7 @@ Extract JS files from a single domain and create wordlists:
 
 ### JS Analyse with nuclei
 
-![JS Analyse with nuclei](images/nuclei.png)
+![JS Analyse with nuclei](https://raw.githubusercontent.com/pikpikcu/js-finding/main/image/nuclei.png)
 
 ## Notes
 
