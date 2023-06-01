@@ -205,5 +205,11 @@ def main():
             f.write(output_content)
         print(Fore.CYAN + f"Results written to {args.output}" + Style.RESET_ALL)
 
+    # Create output directory if specified
+    if args.output_dir:
+        output_dir = os.path.abspath(args.output_dir)
+        os.makedirs(output_dir, exist_ok=True)
+        print(Fore.CYAN + f"Output directory created: {output_dir}" + Style.RESET_ALL)
+
 if __name__ == "__main__":
     main()
