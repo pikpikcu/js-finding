@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='js-finding',
-    version='1.0',
+    version='1.002',
     description='A tool to extract JS files from given domains',
     author='pikpikcu',
     author_email='N/A',

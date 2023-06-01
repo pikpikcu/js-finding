@@ -13,13 +13,15 @@ import socks
 import socket
 from urllib.parse import urlparse
 
-
 def download_file(url, output_dir):
     try:
         response = requests.get(url)
         if response.status_code == 200:
             file_name = url.split("/")[-1]
-            file_path = f"{output_dir}/{file_name}"
+            file_path = os.path.join(output_dir, file_name)
+
+            os.makedirs(output_dir, exist_ok=True)
+
             with open(file_path, "wb") as f:
                 f.write(response.content)
             return file_path
@@ -29,11 +31,11 @@ def download_file(url, output_dir):
         print(f"Download error: {str(e)}")
         return None
 
+
 def create_wordlists(file_path):
     wordlists = set()
     with open(file_path, 'r') as file:
         content = file.read()
-        # Extract words from the file using regular expressions
         words = re.findall(r'\b\w+\b', content)
         wordlists.update(words)
     return wordlists
@@ -42,13 +44,9 @@ def extract_js(domain, debug, download_files, output_dir, create_lists):
     result = []
 
     try:
-        # start the timer
         start_time = time.time()
-
-        # Print extracting message
         print(f"Extracting JS from: {domain}")
 
-        # initialize subprocesses
         processes = {
             "Waybackurls": subprocess.Popen(['waybackurls', domain], stdout=subprocess.PIPE, stderr=subprocess.PIPE),
             "Gauplus": subprocess.Popen(['gauplus', domain], stdout=subprocess.PIPE, stderr=subprocess.PIPE),
@@ -58,40 +56,30 @@ def extract_js(domain, debug, download_files, output_dir, create_lists):
         outputs = {}
 
         for name, process in processes.items():
-            # print debug info
             if debug:
                 print(f"Extracting JS With: {name}")
-
-            # run subprocess and get its output and error
             if name == "Subjs":
                 output, error = process.communicate(input=domain.encode('utf-8'))
             else:
                 output, error = process.communicate()
-
             output = output.decode('utf-8').splitlines()
 
-            # filter output to include only .js files
             if name in ["Waybackurls", "Gauplus"]:
                 output = [url for url in output if re.search(r"\.js$", url)]
 
-            # print debug info from subprocess
             if debug and error:
                 print(f"{name} error: {error.decode('utf-8')}")
 
             outputs[name] = output
 
-        # stop the timer
         end_time = time.time()
 
-        # print debug info
         if debug:
             print(f"Extraction completed in: {end_time - start_time} seconds")
 
-        # store the extracted output
         result.append(f"Extrak domain: {domain}")
         result.append("Results Url JS:")
 
-        # combine the results from waybackurls, gauplus, and subjs
         for output in set(outputs["Waybackurls"]).union(set(outputs["Gauplus"])).union(set(outputs["Subjs"])):
             result.append(f"- {output}")
 
@@ -115,17 +103,14 @@ def extract_js(domain, debug, download_files, output_dir, create_lists):
     return result
 
 def main():
-    # Initialize colorama
     init()
 
-    # Print banner with codename and version
     codename = "JS Finding"
-    version = "v1.0"
+    version = "v1.002"
     banner = pyfiglet.Figlet(font="slant").renderText(codename)
     banner += f"{version.center(len(codename))}\n"
     print(Fore.GREEN + banner + Style.RESET_ALL)
 
-    # Setup argparse
     parser = argparse.ArgumentParser(description='Extract JS files from given domains.')
     group = parser.add_mutually_exclusive_group(required=False)
     group.add_argument('-u', '--url', metavar='url', type=str, help='Single domain URL')
@@ -141,7 +126,6 @@ def main():
 
     results = []
 
-    # Set proxy if provided
     if args.proxy:
         parsed_proxy = urlparse(args.proxy)
         proxy_type = parsed_proxy.scheme.lower()
@@ -169,7 +153,6 @@ def main():
     else:
         proxies = None
 
-    # Read piped input if available
     if not sys.stdin.isatty():
         input_lines = sys.stdin.readlines()
         for line in input_lines:
@@ -180,7 +163,6 @@ def main():
             print("\n".join(extracted))
             print()
 
-    # Process URL or list of domains if provided
     if args.url:
         extracted = extract_js(args.url, args.debug, args.download, args.output_dir, args.create_lists)
         results += extracted
@@ -198,14 +180,12 @@ def main():
             print("\n".join(extracted))
             print()
 
-    # Write the results to the output file
     if args.output:
         output_content = "\n".join(results)
         with open(args.output, 'w') as f:
             f.write(output_content)
         print(Fore.CYAN + f"Results written to {args.output}" + Style.RESET_ALL)
 
-    # Create output directory if specified
     if args.output_dir:
         output_dir = os.path.abspath(args.output_dir)
         os.makedirs(output_dir, exist_ok=True)
