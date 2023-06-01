@@ -13,13 +13,15 @@ import socks
 import socket
 from urllib.parse import urlparse
 
-def download_file(url, output_dir):
+
+def download_file(url, output_dir, retries):
     try:
         response = requests.get(url)
         if response.status_code == 200:
             file_name = url.split("/")[-1]
             file_path = os.path.join(output_dir, file_name)
 
+            # Create directory if it doesn't exist
             os.makedirs(output_dir, exist_ok=True)
 
             with open(file_path, "wb") as f:
@@ -29,8 +31,12 @@ def download_file(url, output_dir):
             return None
     except Exception as e:
         print(f"Download error: {str(e)}")
-        return None
-
+        if retries > 0:
+            print(f"Retrying download... {retries} retries left")
+            return download_file(url, output_dir, retries - 1)
+        else:
+            print("Maximum number of retries reached. Failed to download file.")
+            return None
 
 def create_wordlists(file_path):
     wordlists = set()
@@ -96,8 +102,12 @@ def extract_js(domain, debug, download_files, output_dir, create_lists):
                 else:
                     result.append(f"   - Failed to download file")
 
+    except KeyboardInterrupt:
+        print("\nExtraction interrupted by user.")
+        sys.exit(0)
+
     except Exception as e:
-        result.append(f"Error occured: {str(e)}")
+        result.append(f"Error occurred: {str(e)}")
         sys.exit(1)
 
     return result
@@ -117,10 +127,11 @@ def main():
     group.add_argument('-l', '--list', metavar='file', type=str, help='A file containing a list of domains')
     parser.add_argument('-o', '--output', metavar='output', type=str, help='The output file to store the results')
     parser.add_argument('-d', '--debug', action='store_true', help='Enable debug output')
-    parser.add_argument('-download', action='store_true', help='Enable file download')
-    parser.add_argument('-output-dir', metavar='dir', type=str, help='The directory to store downloaded files')
-    parser.add_argument('-create-lists', action='store_true', help='Enable wordlists creation')
-    parser.add_argument('-proxy', metavar='proxy', type=str, help='Use a proxy server for requests')
+    parser.add_argument('-dl', '--download', action='store_true', help='Enable file download')
+    parser.add_argument('-r', '--retries', metavar='int', type=int, default=3, help='Number of retries for download attempts')
+    parser.add_argument('-od', '--output-dir', metavar='dir', type=str, help='The directory to store downloaded files')
+    parser.add_argument('-w', '--create-wordlists', action='store_true', help='Enable wordlists creation')
+    parser.add_argument('-p', '--proxy', metavar='proxy', type=str, help='Use a proxy server for requests')
 
     args = parser.parse_args()
 
@@ -157,14 +168,14 @@ def main():
         input_lines = sys.stdin.readlines()
         for line in input_lines:
             line = line.strip()
-            extracted = extract_js(line, args.debug, args.download, args.output_dir, args.create_lists)
+            extracted = extract_js(line, args.debug, args.download, args.output_dir, args.create_wordlists)
             results += extracted
             results.append("")  # Add an empty line for readability
             print("\n".join(extracted))
             print()
 
     if args.url:
-        extracted = extract_js(args.url, args.debug, args.download, args.output_dir, args.create_lists)
+        extracted = extract_js(args.url, args.debug, args.download, args.output_dir, args.create_wordlists)
         results += extracted
         results.append("")  # Add an empty line for readability
         print("\n".join(extracted))
@@ -174,7 +185,7 @@ def main():
         with open(args.list, 'r') as f:
             domains = f.read().splitlines()
         for domain in domains:
-            extracted = extract_js(domain, args.debug, args.download, args.output_dir, args.create_lists)
+            extracted = extract_js(domain, args.debug, args.download, args.output_dir, args.create_wordlists)
             results += extracted
             results.append("")  # Add an empty line for readability
             print("\n".join(extracted))
@@ -190,6 +201,13 @@ def main():
         output_dir = os.path.abspath(args.output_dir)
         os.makedirs(output_dir, exist_ok=True)
         print(Fore.CYAN + f"Output directory created: {output_dir}" + Style.RESET_ALL)
+
+    if args.download:
+        extracted = extract_js(args.url, args.debug, args.download, args.output_dir, args.create_wordlists, args.retries)
+        results += extracted
+        results.append("")  # Add an empty line for readability
+        print("\n".join(extracted))
+        print()
 
 if __name__ == "__main__":
     main()
