@@ -19,6 +19,7 @@ git clone https://github.com/pikpikcu/js-finding.git
 cd js-finding
 pip install -r requirements.txt
 sudo python3 setup.py install 
+sudo pip3 install .
 ```
 ## Usage
 
