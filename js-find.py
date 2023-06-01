@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import argparse
 import subprocess
 import sys
@@ -7,6 +9,8 @@ import requests
 import pyfiglet
 import os
 from colorama import Fore, Style, init
+import socks
+import socket
 
 
 def download_file(url, output_dir):
@@ -115,14 +119,14 @@ def main():
 
     # Print banner with codename and version
     codename = "JS Finding"
-    version = "v1.0"
+    version = "v1.001"
     banner = pyfiglet.Figlet(font="slant").renderText(codename)
     banner += f"{version.center(len(codename))}\n"
     print(Fore.GREEN + banner + Style.RESET_ALL)
 
     # Setup argparse
     parser = argparse.ArgumentParser(description='Extract JS files from given domains.')
-    group = parser.add_mutually_exclusive_group(required=True)
+    group = parser.add_mutually_exclusive_group(required=False)
     group.add_argument('-u', '--url', metavar='url', type=str, help='Single domain URL')
     group.add_argument('-l', '--list', metavar='file', type=str, help='A file containing a list of domains')
     parser.add_argument('-o', '--output', metavar='output', type=str, help='The output file to store the results')
@@ -130,33 +134,71 @@ def main():
     parser.add_argument('-download', action='store_true', help='Enable file download')
     parser.add_argument('-output-dir', metavar='dir', type=str, help='The directory to store downloaded files')
     parser.add_argument('-create-lists', action='store_true', help='Enable wordlists creation')
+    parser.add_argument('-proxy', metavar='proxy', type=str, help='Use a proxy server for requests')
 
     args = parser.parse_args()
 
     results = []
 
+    # Set proxy if provided
+    if args.proxy:
+        parsed_proxy = urlparse(args.proxy)
+        proxy_type = parsed_proxy.scheme.lower()
+        proxy_host = parsed_proxy.hostname
+        proxy_port = parsed_proxy.port
+        proxy_username = parsed_proxy.username
+        proxy_password = parsed_proxy.password
+
+        if proxy_type == 'http' or proxy_type == 'https':
+            proxies = {
+                'http': args.proxy,
+                'https': args.proxy
+            }
+        elif proxy_type == 'socks4':
+            socks.setdefaultproxy(socks.SOCKS4, proxy_host, proxy_port)
+            socket.socket = socks.socksocket
+        elif proxy_type == 'socks5':
+            socks.setdefaultproxy(socks.SOCKS5, proxy_host, proxy_port)
+            socket.socket = socks.socksocket
+            if proxy_username and proxy_password:
+                socks.wrapmodule(requests)
+                requests.get = socks.socksocket.get
+        else:
+            raise ValueError('Unsupported proxy type')
+    else:
+        proxies = None
+
+    # Read piped input if available
+    if not sys.stdin.isatty():
+        input_lines = sys.stdin.readlines()
+        for line in input_lines:
+            line = line.strip()
+            extracted = extract_js(line, args.debug, args.download, args.output_dir, args.create_lists, proxies)
+            results += extracted
+            results.append("")  # Add an empty line for readability
+            print("\n".join(extracted))
+            print()
+
+    # Process URL or list of domains if provided
     if args.url:
-        # Single domain URL
-        extracted = extract_js(args.url, args.debug, args.download, args.output_dir, args.create_lists)
+        extracted = extract_js(args.url, args.debug, args.download, args.output_dir, args.create_lists, proxies)
         results += extracted
         results.append("")  # Add an empty line for readability
         print("\n".join(extracted))
         print()
 
     if args.list:
-        # Read the domains from the file
         with open(args.list, 'r') as f:
             domains = f.read().splitlines()
-
         for domain in domains:
-            extracted = extract_js(domain, args.debug, args.download, args.output_dir, args.create_lists)
+            extracted = extract_js(domain, args.debug, args.download, args.output_dir, args.create_lists, proxies)
             results += extracted
             results.append("")  # Add an empty line for readability
             print("\n".join(extracted))
             print()
 
+    # Write the results to the output file
     if args.output:
-        # Write the results to the output file
         output_content = "\n".join(results)
         with open(args.output, 'w') as f:
             f.write(output_content)
