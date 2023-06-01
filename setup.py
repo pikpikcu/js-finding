@@ -7,7 +7,7 @@ setup(
     author='pikpikcu',
     author_email='N/A',
     url='http://github.com/pikpikcu/js-finding',
-    py_modules=['main'],
+    packages=find_packages(),
     install_requires=[
         'requests',
         'pyfiglet',
