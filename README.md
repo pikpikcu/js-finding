@@ -1,4 +1,6 @@
-# JS Finding
+<h1 align="center">
+Js Finding
+</h1>
 
 JS Finding is a Python tool for extracting JavaScript (JS) files from a given list of domains. This tool utilizes various utilities such as `waybackurls`, `gauplus`, and `subjs` to perform JS file extraction from the specified domains.
 
@@ -23,55 +25,55 @@ sudo pip3 install .
 ```
 ## Usage
 
-![JS Finding Usage](https://raw.githubusercontent.com/pikpikcu/js-finding/main/image/default.png)
-
 JS Finding can be used to extract JavaScript (JS) files from either a single domain URL or a list of domains. The tool supports various extraction methods and provides additional options for file download and wordlists creation.
 
-### Single Domain Extraction
+```
+usage: jsfind [-h] [-u URL | -l FILE] [-o OUTPUT] [-d] [-dl] [-r RETRIES] [-od OUTPUT_DIR] [-w] [-p PROXY]
 
-To extract JS files from a single domain, use the following command:
+Extract JS files from given domains.
 
-`jsfind -u <url> -o <output_file> [options]`
+optional arguments:
+  -h, --help            show this help message and exit
+  -u URL, --url URL     Single domain URL
+  -l FILE, --list FILE  A file containing a list of domains
+  -o OUTPUT, --output OUTPUT
+                        The output file to store the results
+  -d, --debug           Enable debug output
+  -dl, --download       Enable file download
+  -r int, --retries int
+                        Number of retries for download attempts (default: 3)
+  -od OUTPUT_DIR, --output-dir OUTPUT_DIR
+                        The directory to store downloaded files
+  -w, --create-wordlists
+                        Enable wordlists creation
+  -p PROXY, --proxy PROXY
+                        Use a proxy server for requests
+```
 
-- `-u` or `--url`: The URL of the single domain to extract JS files from.
-- `-o` or `--output`: The output file name to store the extraction results.
-- `[options]`: Additional options such as `-d`, `-download`, `-output-dir`,`-create-lists`, and `-proxy`.
+## Examples
 
-### Multiple Domains Extraction
+Extract JS from a single domain:
 
-To extract JS files from a list of domains, create a file containing the list of domains (one domain per line) and use the following command:
-`jsfind -l <list_file> -o <output_file> [options]`
+```
+jsfind -u https://example.com -o output.txt -dl -od downloaded_files -w
+```
 
+Extract JS from a list of domains:
 
-- `-l` or `--list`: The file name containing the list of domains.
-- `-o` or `--output`: The output file name to store the extraction results.
-- `[options]`: Additional options such as `-d`, `-download`, `-output-dir`, `-create-lists`, and `-proxy`.
+```
+jsfind.py -l domains.txt -o output.txt -dl -od downloaded_files -w
+```
 
-### Additional Options
-
-- `-d` or `--debug`: Enable debug mode to print additional debug information.
-- `-download`: Enable downloading of the successfully extracted JS files.
-- `-output-dir`: The directory to store the downloaded JS files.
-- `-create-lists`: Enable creation of wordlists from the downloaded JS file contents.
-- `-proxy`: Use a proxy server for requests (HTTP, HTTPS, SOCKS4, or SOCKS5).
-
-### Examples
-
-The URL of the single domain.
-`echo example.com | jsfind [options]`
-
-The file name containing the list of domains.
-`cat subdomain.txt | jsfind [options]`
-
-Extract JS files from a single domain and create wordlists:
-
-`jsfind -u example.com -o output.txt -d -download -output-dir files/ -create-lists`
 
 ### JS Analyse with nuclei
 
 ![JS Analyse with nuclei](https://raw.githubusercontent.com/pikpikcu/js-finding/main/image/nuclei.png)
 
-## Notes
+### Notes
 
 - Make sure to install all the required dependencies before running this tool.
 - Verify that commands such as `waybackurls`, `gauplus`, and `subjs` are already in your system's PATH.
+
+
+### Contributing
+Contributions are welcome! If you find any issues or have suggestions for improvements, please open an issue or submit a pull request.
