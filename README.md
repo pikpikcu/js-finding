@@ -18,7 +18,7 @@ JS Finding is a Python tool for extracting JavaScript (JS) files from a given li
 git clone https://github.com/pikpikcu/js-finding.git
 cd js-finding
 pip install -r requirements.txt
-chmod +x js-find.py
+sudo python3 setup.py install 
 ```
 ## Usage
 
@@ -30,7 +30,7 @@ JS Finding can be used to extract JavaScript (JS) files from either a single dom
 
 To extract JS files from a single domain, use the following command:
 
-`./js-find.py -u <url> -o <output_file> [options]`
+`jsfind -u <url> -o <output_file> [options]`
 
 - `-u` or `--url`: The URL of the single domain to extract JS files from.
 - `-o` or `--output`: The output file name to store the extraction results.
@@ -39,7 +39,7 @@ To extract JS files from a single domain, use the following command:
 ### Multiple Domains Extraction
 
 To extract JS files from a list of domains, create a file containing the list of domains (one domain per line) and use the following command:
-`./js-find.py -l <list_file> -o <output_file> [options]`
+`jsfind -l <list_file> -o <output_file> [options]`
 
 
 - `-l` or `--list`: The file name containing the list of domains.
@@ -57,14 +57,14 @@ To extract JS files from a list of domains, create a file containing the list of
 ### Examples
 
 The URL of the single domain.
-`echo example.com | ./js-find.py [options]`
+`echo example.com | jsfind [options]`
 
 The file name containing the list of domains.
-`cat subdomain.txt | ./js-find.py [options]`
+`cat subdomain.txt | jsfind [options]`
 
 Extract JS files from a single domain and create wordlists:
 
-`./js-find.py -u example.com -o output.txt -d -download -output-dir files/ -create-lists`
+`jsfind -u example.com -o output.txt -d -download -output-dir files/ -create-lists`
 
 ### JS Analyse with nuclei
 
