@@ -124,7 +124,7 @@ def main():
 
     # Print banner with codename and version
     codename = "JS Finding"
-    version = "v1.0"
+    version = "1.002"
     banner = pyfiglet.Figlet(font="slant").renderText(codename)
     banner += f"{version.center(len(codename))}\n"
     print(Fore.GREEN + banner + Style.RESET_ALL)
