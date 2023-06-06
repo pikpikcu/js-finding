@@ -14,6 +14,34 @@ import socket
 from urllib.parse import urlparse
 
 
+def check_tool_installed(tool_name):
+    try:
+        subprocess.run([tool_name, "--version"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        return True
+    except FileNotFoundError:
+        return False
+
+    
+def install_tool(tool_name, install_command):
+    print(f"{Fore.YELLOW}The '{tool_name}' tool is not installed. Installing it now...{Style.RESET_ALL}")
+    try:
+        subprocess.run(install_command, shell=True, check=True)
+        print(f"{Fore.GREEN}Installation of '{tool_name}' is complete.{Style.RESET_ALL}")
+    except subprocess.CalledProcessError:
+        print(f"{Fore.RED}Failed to install '{tool_name}'. Please install it manually.{Style.RESET_ALL}")
+        sys.exit(1)
+        
+def check_dependencies():
+    if not check_tool_installed("waybackurls"):
+        install_tool("Waybackurls", "go install github.com/tomnomnom/waybackurls@latest")
+
+    if not check_tool_installed("gauplus"):
+        install_tool("Gauplus", "go install github.com/bp0lr/gauplus@latest")
+
+    if not check_tool_installed("subjs"):
+        install_tool("Subjs", "go install  github.com/lc/subjs@latest")
+        
+        
 def download_file(url, output_dir, retries):
     try:
         for _ in range(retries):
@@ -121,6 +149,9 @@ def extract_js(domain, debug, download_files, output_dir, create_lists, retries)
 def main():
     # Initialize colorama
     init()
+    
+    # Check tools requirement
+    check_dependencies()
 
     # Print banner with codename and version
     codename = "JS Finding"
