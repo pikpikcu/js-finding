@@ -17,11 +17,7 @@ JS Finding is a Python tool for extracting JavaScript (JS) files from a given li
 
 ## Installation
 ```
-git clone https://github.com/pikpikcu/js-finding.git
-cd js-finding
-pip install -r requirements.txt
-sudo python3 setup.py install 
-sudo pip3 install .
+pip3 install git+https://github.com/pikpikcu/js-finding.git -v
 ```
 ## Usage
 
