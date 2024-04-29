@@ -41,24 +41,26 @@ def check_dependencies():
     if not check_tool_installed("subjs"):
         install_tool("Subjs", "go install  github.com/lc/subjs@latest")
         
-        
 def download_file(url, output_dir, retries):
     try:
+        os.makedirs(output_dir, exist_ok=True)  # Create directory outside the loop
+
         for _ in range(retries):
             response = requests.get(url)
             if response.status_code == 200:
                 file_name = url.split("/")[-1]
                 file_path = os.path.join(output_dir, file_name)
 
-                # Create directory if it doesn't exist
-                os.makedirs(output_dir, exist_ok=True)
-
                 with open(file_path, "wb") as f:
                     f.write(response.content)
                 return file_path
+            else:
+                print(f"[*] Download error: {url} {response.status_code}")
+
+        print(f"[*] Download failed after {retries} retries: {url}")
         return None
-    except Exception as e:
-        print(f"Download error: {str(e)}")
+    except requests.exceptions.RequestException:
+        print(f"[x] Domain No resolved: {url}")
         return None
 
 def create_wordlists(file_path):
