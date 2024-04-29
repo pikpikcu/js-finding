@@ -14,23 +14,53 @@ import socket
 from urllib.parse import urlparse
 
 
+def check_tool_installed(tool_name):
+    try:
+        subprocess.run([tool_name, "--version"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        return True
+    except FileNotFoundError:
+        return False
+
+    
+def install_tool(tool_name, install_command):
+    print(f"{Fore.YELLOW}The '{tool_name}' tool is not installed. Installing it now...{Style.RESET_ALL}")
+    try:
+        subprocess.run(install_command, shell=True, check=True)
+        print(f"{Fore.GREEN}Installation of '{tool_name}' is complete.{Style.RESET_ALL}")
+    except subprocess.CalledProcessError:
+        print(f"{Fore.RED}Failed to install '{tool_name}'. Please install it manually.{Style.RESET_ALL}")
+        sys.exit(1)
+        
+def check_dependencies():
+    if not check_tool_installed("waybackurls"):
+        install_tool("Waybackurls", "go install github.com/tomnomnom/waybackurls@latest")
+
+    if not check_tool_installed("gauplus"):
+        install_tool("Gauplus", "go install github.com/bp0lr/gauplus@latest")
+
+    if not check_tool_installed("subjs"):
+        install_tool("Subjs", "go install  github.com/lc/subjs@latest")
+        
 def download_file(url, output_dir, retries):
     try:
+        os.makedirs(output_dir, exist_ok=True)  # Create directory outside the loop
+
         for _ in range(retries):
             response = requests.get(url)
             if response.status_code == 200:
                 file_name = url.split("/")[-1]
                 file_path = os.path.join(output_dir, file_name)
 
-                # Create directory if it doesn't exist
-                os.makedirs(output_dir, exist_ok=True)
-
                 with open(file_path, "wb") as f:
                     f.write(response.content)
                 return file_path
+            else:
+                print(f"[*] Download error: {url} {response.status_code}")
+
+        print(f"[*] Download failed after {retries} retries: {url}")
         return None
-    except Exception as e:
-        print(f"Download error: {str(e)}")
+    except requests.exceptions.RequestException:
+        print(f"[x] Domain No resolved: {url}")
         return None
 
 def create_wordlists(file_path):
@@ -121,6 +151,9 @@ def extract_js(domain, debug, download_files, output_dir, create_lists, retries)
 def main():
     # Initialize colorama
     init()
+    
+    # Check tools requirement
+    check_dependencies()
 
     # Print banner with codename and version
     codename = "JS Finding"
